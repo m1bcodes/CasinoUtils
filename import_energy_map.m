@@ -1,4 +1,11 @@
 function planes = import_energy_map(fn)
+%
+% function planes = import_energy_map(fn)
+%
+% import energy map exported from WinCasino v3. 
+% To export the data: Select "Energy Scan" in the tree view
+% and then click "Edit->Export Data"
+%
 
 fid = fopen(fn,"rt");
 
@@ -49,6 +56,16 @@ while ~feof(fid)
 end
 
 fclose(fid);
+
+% convert to strct array
+ps = [];
+for i1=1:length(planes)
+    pss = struct("pid", string(planes{i1}.plane.planeid), "pos", str2double(planes{i1}.plane.pos), ...
+        "planeno", str2double(planes{i1}.plane.planeno), "xx", planes{i1}.xx(1:end-1), ...
+        "yy", planes{i1}.yy, "map", planes{i1}.map);
+    ps=[ps pss];
+end
+planes = ps;
 end
 
 function p = parse_planeId(s)
@@ -64,13 +81,13 @@ end
 end
 
 function [row, line] = parse_lineDef(s)
-c = regexp(s,'(nm)|\s','split');
-cy = str2double(c);
-if ~isfinite(cy(1))
+a=extractBefore(s,"nm");
+row = str2double(a);
+if ~isfinite(row)
     row = [];
     line=[];
 else
-    row = cy(1);
-    line=cy(3:end);
+    b = extractAfter(s,"nm");
+    line = sscanf(b,"%f")';
 end
 end
